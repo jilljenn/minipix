@@ -1,0 +1,14 @@
+<!doctype html>
+<title>Report</title>
+<h1>Report</h1>
+
+<form method="post">
+  {{ preds }}
+  {% for ability in abilities %}
+  <p>
+    <label for="username">{{ ability.concept }}</label>
+    <input type="range" min="0" max="100" value="{{ ability.proba }}" />
+  </p>
+  {% endfor %}
+  <input type="submit" value="Envoyer">
+</form>
