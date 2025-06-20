@@ -1,6 +1,8 @@
 from flask import Flask, request, redirect, render_template, session
 import numpy as np
 from sklearn.linear_model import LogisticRegression
+from statsmodels.miscmodels.ordinal_model import OrderedModel
+from mord import LogisticAT
 
 app = Flask(__name__)
 app.secret_key = "secret_key"
@@ -50,8 +52,18 @@ def quiz():
         X = np.append(X, [[1000], [3000]], axis=0)
         y = np.append(y, [1, 0])
 
-        model = LogisticRegression().fit(X, y)
-        elo = -model.intercept_[0] / model.coef_[0][0]
+        # Fit ordinal logistic regression model
+        model = OrderedModel(endog=y, exog=X, distr='logit')
+        res = model.fit(method='bfgs', disp=False)
+
+        # Retrieve estimated user ELO by solving: X*beta ≈ threshold for response = 1.5
+        beta = res.params[0]
+        thresholds = res.model.cutoffs
+        threshold = np.mean(thresholds)  # Midpoint between 1 and 2
+
+        elo = threshold / beta
+
+        # elo = -model.intercept_[0] / model.coef_[0][0]
     else:
         elo = 2000
 
@@ -79,7 +91,13 @@ def report():
 
     X = np.array([[topic_difficulties[q]] for q, _ in q_a_pairs])
     y = np.array([1 if a == 2 else 0 for _, a in q_a_pairs])
-    model = LogisticRegression().fit(X, y)
+
+    X = np.append(X, [[1000], [3000]], axis=0)
+    y = np.append(y, [1, 0])
+    
+    # model = LogisticRegression().fit(X, y)
+    model = LogisticAT()
+    model.fit(X, y)
 
     mastery = {
         q: round(model.predict_proba([[diff]])[0][1], 3)

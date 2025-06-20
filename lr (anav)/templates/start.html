@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Pre-Quiz Info</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+  <div class="bg-white shadow-xl rounded-2xl p-8 w-full max-w-lg text-left space-y-4">
+    <h2 class="text-2xl font-semibold text-center mb-4 text-gray-800">Before You Begin</h2>
+    <form method="post" action="/start-quiz" class="space-y-4">
+      
+      <label class="block">
+        <span class="text-gray-700">Your Name</span>
+        <input name="name" required class="mt-1 block w-full rounded-xl border-gray-300 py-2 px-3 leading-relaxed" />
+      </label>
+
+      <label class="block">
+        <span class="text-gray-700">Favorite Keyboard Layout</span>
+        <select name="keyboard" class="mt-1 block w-full rounded-xl border-gray-300 py-2 px-3 leading-relaxed">
+          <option value="qwerty">QWERTY</option>
+          <option value="azerty">AZERTY</option>
+          <option value="other">Other</option>
+        </select>
+      </label>
+
+      <label class="block">
+        <span class="text-gray-700">Favorite Language for Competitions</span>
+        <select name="language" class="mt-1 block w-full rounded-xl border-gray-300 py-2 px-3 leading-relaxed">
+          <option value="cpp">C++</option>
+          <option value="python">Python</option>
+          <option value="other">Other</option>
+        </select>
+        <input name="language_other" placeholder="If other, specify..." class="mt-1 block w-full rounded-xl border-gray-300 py-2 px-3 leading-relaxed" />
+      </label>
+
+      <label class="block">
+        <span class="text-gray-700">Favorite IDE</span>
+        <select name="ide" class="mt-1 block w-full rounded-xl border-gray-300 py-2 px-3 leading-relaxed">
+          <option value="vscode">VS Code</option>
+          <option value="other">Other</option>
+        </select>
+      </label>
+
+      <label class="block">
+        <span class="text-gray-700">Discord Username</span>
+        <input name="discord" class="mt-1 block w-full rounded-xl border-gray-300 py-2 px-3 leading-relaxed" />
+        <span class="text-sm text-blue-600">Join the Discord: <a href="https://discord.gg/gyjgFZCGY3" class="underline">discord.gg/gyjgFZCGY3</a></span>
+      </label>
+
+      <label class="block">
+        <span class="text-gray-700">Kattis Username</span>
+        <input name="kattis" class="mt-1 block w-full rounded-xl border-gray-300 py-2 px-3 leading-relaxed" />
+        <span class="text-sm text-blue-600">Create an account: <a href="https://open.kattis.com/" class="underline">open.kattis.com</a></span>
+      </label>
+
+      <button type="submit" class="w-full py-2 bg-blue-500 text-white font-semibold rounded-xl hover:bg-blue-600">Start Quiz</button>
+    </form>
+  </div>
+</body>
+</html>
