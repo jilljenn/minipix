@@ -13,18 +13,51 @@
       <p class="text-xl font-semibold text-indigo-600">Estimated Skill (ELO): <span>{{ elo | round(2) }}</span></p>
     </div>
 
-    <ul class="divide-y divide-gray-200">
-      {% for q, prob in mastery %}
-        <li class="flex justify-between py-3">
-          <span class="text-gray-800 font-medium">{{ topics[q] }}</span>
-          <span class="text-sm text-gray-600">{{ '%.1f'|format(prob * 100) }}%</span>
-        </li>
-      {% endfor %}
-    </ul>
+    <form action="/submit_feedback" method="POST" id="feedback-form">
+      <ul class="space-y-6">
+        {% for q, prob in mastery %}
+          <li>
+            <div class="flex justify-between mb-1">
+              <span class="text-gray-800 font-medium">{{ topics[q] }}</span>
+              <span id="slider-value-{{ q }}" class="text-sm text-gray-600">{{ '%.1f'|format(prob * 100) }}%</span>
+            </div>
+            <input
+              type="range"
+              name="feedback_{{ q }}"
+              id="slider-{{ q }}"
+              min="0"
+              max="100"
+              step="1"
+              value="{{ (prob * 100) | round(0) }}"
+              class="w-full accent-indigo-600"
+              data-default="{{ (prob * 100) | round(0) }}"
+              oninput="document.getElementById('slider-value-{{ q }}').innerText = this.value + '%'"
+            />
+          </li>
+        {% endfor %}
+      </ul>
 
-    <div class="mt-8 text-center">
-      <p class="text-gray-500">Think something’s off? You can give feedback to improve accuracy.</p>
-    </div>
+      <div class="mt-8 flex justify-center gap-4 flex-wrap">
+        <button type="submit" class="bg-indigo-600 text-white px-5 py-2 rounded-xl hover:bg-indigo-700">
+          Submit Feedback
+        </button>
+        <button type="button" onclick="resetSliders()" class="bg-gray-200 text-gray-800 px-5 py-2 rounded-xl hover:bg-gray-300">
+          Reset Sliders
+        </button>
+      </div>
+    </form>
   </div>
+
+  <script>
+    function resetSliders() {
+      const sliders = document.querySelectorAll('input[type="range"]');
+      sliders.forEach(slider => {
+        const defaultVal = slider.getAttribute('data-default');
+        slider.value = defaultVal;
+        const id = slider.id.replace('slider-', '');
+        document.getElementById(`slider-value-${id}`).innerText = defaultVal + '%';
+      });
+    }
+  </script>
 </body>
 </html>

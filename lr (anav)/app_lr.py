@@ -15,28 +15,17 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 app = Flask(__name__)
 app.secret_key = "secret_key"
 
-topic_names = [
-    "DFS", "BFS", "Shortest paths", "Minimum spanning trees", "Strongly connected components",
-    "Biconnected components", "2-SAT", "Matroids", "Dynamic programming (DP)", "DP optimizations (Knuth)",
-    "Union-Find", "Monotone queue", "Range Min Query", "Lowest Common Ancestor", "Eulerian tour",
-    "Centroids", "Heavy-light decomposition", "Square root decomposition", "Segment trees",
-    "Lazy segment trees", "Sparse table", "Union of rectangles", "Matching algorithms", "Ford-Fulkerson",
-    "Hungarian algorithm", "Min-cost flow", "Sweep line algorithm", "Binary search", "Ternary search",
-    "Backtracking", "Dealing with big numbers modulo prime", "Trie (prefix tree)", "Suffix tree",
-    "Suffix array", "Cartesian tree", "Rabin-Karp (rolling hash)", "Convex Hull",
-    "Checking if point is in polygon", "Pick's theorem", "Computing a winning strategy (Nim)",
-    "Fast Fourier Transform", "Interactive problems"
-]
+response = supabase.table("topic_info").select("*").execute()
+topics = {}
+topic_difficulties = {}
 
-topics = {i: name for i, name in enumerate(topic_names)}
-
-topic_difficulties = {0:1200, 1:1200, 2:1500, 3:1700, 4:1800, 5:1900,
-            6:2000, 7:2300, 8:1500, 9:2100, 10:1500, 11:1800,
-            12:1700, 13:1900, 14:1900, 15:2200, 16:2200, 17:1900,
-            18:1800, 19:2100, 20:1900, 21:2400, 22:2200, 23:1900,
-            24:2300, 25:2400, 26:2100, 27:1200, 28:1500,29:1500,
-            30:2200, 31:1700, 32:2200, 33:2200,34:1800, 35:1800,
-            36:2200, 37:1800, 38:1900,39:1500, 40:2400, 41:2100}
+if response.data:
+    for row in response.data:
+        topic_id = row["id"]
+        topics[topic_id] = row["name"]
+        topic_difficulties[topic_id] = row["difficulty"]
+else:
+    print("No data found or error occurred:", response)
 
 @app.route("/", methods=["GET"])
 def home():
@@ -58,10 +47,6 @@ def start_quiz():
     supabase.table("user_info").insert(data).execute()
 
     return redirect("/quiz?q=")
-
-# @app.route("/")
-# def start():
-#     return redirect("/quiz?q=")
 
 @app.route("/quiz")
 def quiz():
@@ -102,8 +87,6 @@ def answer():
         "id": str(uuid.uuid4()),
         "user_id": user_id,
         "topic_id": question_id,
-        "topic_name": topics[question_id],
-        "difficulty": topic_difficulties[question_id],
         "answer": answer,
     }
 
@@ -130,13 +113,43 @@ def report():
     model = LogisticRegression().fit(X, y)
 
     mastery = {
-        q: round(model.predict_proba([[diff]])[0][1], 3)
+        q: round(model.predict_proba([[diff]])[0][1], 2)
         for q, diff in topic_difficulties.items()
     }
     sorted_mastery = sorted(mastery.items(), key=lambda x: x[1], reverse=True)
+    session["original_probs"] = mastery
     elo = -model.intercept_[0] / model.coef_[0][0]
 
     return render_template("report.html", mastery=sorted_mastery, topics=topics, elo=elo)
+
+@app.route("/submit_feedback", methods=["POST"])
+def submit_feedback():
+    user_id = session.get("user_id", "anonymous")
+    records = []
+
+    for key, value in request.form.items():
+        if key.startswith("feedback_"):
+            qid = key.split("feedback_")[1]
+            predicted = session["original_probs"].get(qid, 0)  
+            predicted = round(predicted, 2)
+            feedback = float(value) / 100.0
+            if feedback != predicted :
+                records.append({
+                    "id": str(uuid.uuid4()),
+                    "user_id": user_id,
+                    "topic_id": qid,
+                    "predicted_value": predicted,
+                    "feedback_value": feedback,
+                })
+
+    supabase.table("mastery_feedback").insert(records).execute()
+
+    return redirect("/thanks")
+
+@app.route("/thanks")
+def thanks():
+    return render_template("thanks.html")
+
 
 if __name__ == "__main__":
     app.run(debug=True)
