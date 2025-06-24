@@ -1,10 +1,12 @@
+from datetime import datetime
+from dotenv import load_dotenv
 from flask import Flask, request, redirect, render_template, session
+import os
 import numpy as np
+import pytz
 from sklearn.linear_model import LogisticRegression
 from supabase import create_client, Client
 import uuid
-import os
-from dotenv import load_dotenv
 
 load_dotenv()
 
@@ -29,20 +31,26 @@ else:
 
 @app.route("/", methods=["GET"])
 def home():
+    session.clear()
     return render_template("start.html")
 
 @app.route("/start-quiz", methods=["POST"])
 def start_quiz():
+    ip_address = request.headers.get("X-Forwarded-For", request.remote_addr)
+        
     data = {
         "id": str(uuid.uuid4()),
         "name": request.form["name"],
-        "keyboard": request.form["keyboard"],
+        "keyboard": request.form["keyboard_other"] or request.form["keyboard"],
         "language": request.form["language_other"] or request.form["language"],
-        "ide": request.form["ide"],
+        "ide": request.form["ide_other"] or request.form["ide"],
         "discord": request.form["discord"],
         "kattis": request.form["kattis"],
+        "timestamp": datetime.now(pytz.timezone('UTC')).isoformat(timespec='seconds'),
+        "ip_address": ip_address
     }
 
+    session["quiz_started"] = True
     session["user_id"] = data["id"] 
     supabase.table("user_info").insert(data).execute()
 
@@ -50,13 +58,18 @@ def start_quiz():
 
 @app.route("/quiz")
 def quiz():
+    
     q_str = request.args.get("q", "")
+
+    if not session.get("quiz_started"):
+        return redirect("/")  
+    
     tokens = list(map(int, q_str.split(","))) if q_str else []
     q_a_pairs = list(zip(tokens[::2], tokens[1::2]))
 
     asked_ids = [q for q, _ in q_a_pairs]
 
-    if len(q_a_pairs) >= 10:
+    if len(q_a_pairs) >= 6:
         return redirect(f"/report?q={q_str}")
 
     if q_a_pairs:
@@ -88,6 +101,7 @@ def answer():
         "user_id": user_id,
         "topic_id": question_id,
         "answer": answer,
+        "timestamp": datetime.now(pytz.timezone('UTC')).isoformat(),
     }
 
     supabase.table("quiz_responses").insert(response_data).execute()
@@ -97,13 +111,14 @@ def answer():
 
 @app.route("/report")
 def report():
+
     q_str = request.args.get("q", "")
     tokens = list(map(int, q_str.split(","))) if q_str else []
     q_a_pairs = list(zip(tokens[::2], tokens[1::2]))
 
     if not q_a_pairs:
-        return "No data."
-
+        return redirect("/")
+    
     X = np.array([[topic_difficulties[q]] for q, _ in q_a_pairs])
     y = np.array([1 if a == 2 else 0 for _, a in q_a_pairs])
 
@@ -140,6 +155,7 @@ def submit_feedback():
                     "topic_id": qid,
                     "predicted_value": predicted,
                     "feedback_value": feedback,
+                    "timestamp": datetime.now(pytz.timezone('UTC')).isoformat()
                 })
 
     supabase.table("mastery_feedback").insert(records).execute()
