@@ -12,10 +12,11 @@ load_dotenv()
 
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+SECRET_KEY = os.getenv("SECRET_KEY")
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 app = Flask(__name__)
-app.secret_key = "secret_key"
+app.secret_key = SECRET_KEY
 
 response = supabase.table("topic_info").select("*").execute()
 topics = {}
@@ -76,10 +77,10 @@ def quiz():
         X = np.array([[topic_difficulties[q]] for q, _ in q_a_pairs])
         y = np.array([1 if a == 2 else 0 for _, a in q_a_pairs])
 
-        X_prev_train = np.append(X[:-1], [[1000], [3000]], axis=0)
+        X_prev_train = np.append(X[:-1], [[1000], [3800]], axis=0)
         y_prev_train = np.append(y[:-1], [1, 0])
 
-        X_train = np.append(X, [[1000], [3000]], axis=0)
+        X_train = np.append(X, [[1000], [3800]], axis=0)
         y_train = np.append(y, [1, 0])
 
         model = LogisticRegression(C=1e10).fit(X_prev_train, y_prev_train)
@@ -90,12 +91,12 @@ def quiz():
         if len(q_a_pairs) >= 5 and abs(elo - previous_elo) < 2:
             return redirect(f"/report?q={q_str}")
     else:
-        previous_elo = elo = 2000
+        previous_elo = elo = 2400
 
     remaining = [tid for tid in topics if tid not in asked_ids]
     next_q = min(remaining, key=lambda q: abs(topic_difficulties[q] - elo))
 
-    return render_template("question.html", q=next_q, q_str=q_str, topic_name=topics[next_q], previous_elo=previous_elo, elo=int(round(elo)))
+    return render_template("question.html", q=next_q, q_str=q_str, topic_name=topics[next_q], elo=int(round(elo)))
 
 @app.route("/answer", methods=["POST"])
 def answer():
@@ -130,7 +131,7 @@ def report():
     X = np.array([[topic_difficulties[q]] for q, _ in q_a_pairs])
     y = np.array([1 if a == 2 else 0 for _, a in q_a_pairs])
 
-    X = np.append(X, [[1000], [4000]], axis=0)
+    X = np.append(X, [[1000], [3800]], axis=0)
     y = np.append(y, [1, 0])
     
     model = LogisticRegression(C=1e10).fit(X, y)
