@@ -10,8 +10,9 @@
     <h1 class="text-3xl font-bold mb-6 text-center text-indigo-700">Your Estimated Mastery Levels</h1>
     
     <div class="mb-6 text-center">
-      <p class="text-xl font-semibold text-indigo-600">Estimated Skill (ELO): <span>{{ elo | round(2) }}</span></p>
+      <p class="text-xl font-semibold text-indigo-600">Estimated Skill (ELO): <span>{{ elo }}</span></p>
     </div>
+    <p>You can now update the mastery levels if you disagree with this report, by dragging the ranges, then by clicking "Submit feedback" at the bottom of the page. This feedback will be used to train better models.</p>
 
     <form action="/submit_feedback" method="POST" id="feedback-form">
       <ul class="space-y-6">
