@@ -156,8 +156,9 @@ def submit_feedback():
                     "feedback_value": feedback,
                     "timestamp": datetime.now(pytz.timezone('UTC')).isoformat()
                 })
-
-    supabase.table("mastery_feedback").insert(records).execute()
+                
+    if records:
+        supabase.table("mastery_feedback").insert(records).execute()
 
     return redirect("/thanks")
 
