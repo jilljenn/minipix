@@ -1,0 +1,28 @@
+name,difficulty
+DFS/BFS,2000
+Binary search,2050
+Shortest paths,2050
+Dynamic programming (DP),2099
+Union-Find,2248
+Backtracking,2248
+Range Min Query,2298
+Segment trees,2348
+Rabin-Karp (rolling hash),2369
+Checking if point is in polygon,2398
+Lazy segment trees,2398
+Computing a winning strategy (Nim),2448
+Ford-Fulkerson,2448
+2-SAT,2448
+Square root decomposition,2448
+Matching and flows,2498
+Sparse table,2498
+Min-cost flow,2498
+Fast Fourier Transform,2548
+Cartesian tree,2548
+Trie (prefix tree),2548
+Heavy-light decomposition,2584
+Hungarian algorithm,2598
+Suffix array,2598
+Suffix tree,2700
+Fast Subset Transform,2725
+Gomory-Hu Tree,2790

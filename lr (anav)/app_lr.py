@@ -59,11 +59,10 @@ def start_quiz():
 @app.route("/quiz")
 def quiz():
     
-    q_str = request.args.get("q", "")
-
     if not session.get("quiz_started"):
         return redirect("/")  
     
+    q_str = request.args.get("q", "")
     tokens = list(map(int, q_str.split(","))) if q_str else []
     q_a_pairs = list(zip(tokens[::2], tokens[1::2]))
 
@@ -122,7 +121,7 @@ def report():
     X = np.array([[topic_difficulties[q]] for q, _ in q_a_pairs])
     y = np.array([1 if a == 2 else 0 for _, a in q_a_pairs])
 
-    X = np.append(X, [[1000], [3000]], axis=0)
+    X = np.append(X, [[1000], [4000]], axis=0)
     y = np.append(y, [1, 0])
     
     model = LogisticRegression().fit(X, y)
