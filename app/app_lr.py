@@ -5,30 +5,25 @@ import os
 import numpy as np
 import pytz
 from sklearn.linear_model import LogisticRegression
-from supabase import create_client, Client
 import uuid
+from app import db
 
 load_dotenv()
 
-SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 SECRET_KEY = os.getenv("SECRET_KEY")
-supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+
+# initialize local sqlite DB and ensure topics are seeded
+db.init_db()
 
 app = Flask(__name__)
 app.secret_key = SECRET_KEY
 
-response = supabase.table("topic_info").select("*").execute()
 topics = {}
 topic_difficulties = {}
-
-if response.data:
-    for row in response.data:
-        topic_id = row["id"]
-        topics[topic_id] = row["name"]
-        topic_difficulties[topic_id] = row["difficulty"]
-else:
-    print("No data found or error occurred:", response)
+for row in db.get_topics():
+    topic_id = row["id"]
+    topics[topic_id] = row["name"]
+    topic_difficulties[topic_id] = row["difficulty"]
 
 @app.route("/", methods=["GET"])
 def home():
@@ -52,8 +47,8 @@ def start_quiz():
     }
 
     session["quiz_started"] = True
-    session["user_id"] = data["id"] 
-    supabase.table("user_info").insert(data).execute()
+    session["user_id"] = data["id"]
+    db.insert_user_info(data)
 
     return redirect("/quiz?q=")
 
@@ -113,7 +108,7 @@ def answer():
         "timestamp": datetime.now(pytz.timezone('UTC')).isoformat(),
     }
 
-    supabase.table("quiz_responses").insert(response_data).execute()
+    db.insert_quiz_response(response_data)
 
     new_q_str = prev_q_str + f",{question_id},{answer}" if prev_q_str else f"{question_id},{answer}"
     return redirect(f"/quiz?q={new_q_str}")
@@ -168,7 +163,7 @@ def submit_feedback():
                 })
                 
     if records:
-        supabase.table("mastery_feedback").insert(records).execute()
+        db.insert_mastery_feedback(records)
 
     return redirect("/thanks")
 
