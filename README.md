@@ -14,10 +14,13 @@ Initialize the local SQLite database (seeds `topic_info` from `app/topics.csv` i
 
     python -m app.db
 
-Run the Flask app :
+Run the Flask app, if you used uv:
 
-    FLASK_APP=app.app_lr uv run python -m flask run  # With uv
-    FLASK_APP=app.app_lr python -m flask run  # Or without uv
+    FLASK_APP=app.app_lr uv run python -m flask run
+
+If you didn't use uv:
+
+    FLASK_APP=app.app_lr python -m flask run
 
 ## Examples
 
