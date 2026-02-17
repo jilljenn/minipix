@@ -21,8 +21,6 @@ Run the Flask app :
 
 ## Examples
 
-![](assets/intro.png)
-
 ![](assets/test.png)
 
 ![](assets/feedback.png)
